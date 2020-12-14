@@ -1,15 +1,15 @@
+#include <DDialog>
+#include <DGuiApplicationHelper>
+#include <QProcess>
+#include <QStorageInfo>
+#include <QMessageBox>
+
 #include "widget.h"
 #include "ui_widget.h"
 #include "utilities.h"
 
-#include <DMessageBox>
-#include <DGuiApplicationHelper>
-#include <QProcess>
-#include <QStorageInfo>
-
-#include <iostream>
-
 using namespace Dtk::Gui;
+using namespace Dtk::Widget;
 
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
@@ -76,18 +76,28 @@ void Widget::finishedUnarchive()
 
 void Widget::proceedInstallation()
 {
-  Dtk::Widget::DMessageBox confirm;
-  confirm.setText(tr("You're about to install Ventoy into %1. Confirm?\n"
+  DDialog confirm1, confirm2;
+  // We can't reuse a single dialog, because it will mess up
+  // the window focuses. Fix this when it behaves right.
+  confirm1.setMessage(tr("You're about to install Ventoy into %1. Confirm?\n"
                      "ALL your data on the target will be erased!")
                   .arg(ui->selectDevice_combo->currentData().toString()));
-  confirm.addButton(QMessageBox::StandardButton::Ok);
-  confirm.addButton(QMessageBox::StandardButton::Cancel);
-  if(confirm.exec() == QMessageBox::StandardButton::Ok)
+  confirm1.addButton(tr("Confirm"), false, DDialog::ButtonWarning);
+  confirm1.addButton(tr("Cancel"), true);
+  confirm1.setTitle(tr("Confirm Installation"));
+  confirm1.setIcon(QIcon::fromTheme("dialog-warning"));
+
+  confirm2.setMessage(tr("Double-check! The target device is %1.\n"
+                     "Installing Ventoy will destroy ALL DATA present on the device!")
+                  .arg(ui->selectDevice_combo->currentData().toString()));
+  confirm2.addButton(tr("Confirm"), false, DDialog::ButtonWarning);
+  confirm2.addButton(tr("Cancel"), true);
+  confirm2.setTitle(tr("Confirm Installation Again"));
+  confirm2.setIcon(QIcon::fromTheme("dialog-warning"));
+
+  if(confirm1.exec() == 0)
   {
-    confirm.setText(tr("Double-check! The target device is %1.\n"
-                       "Installing Ventoy will destroy ALL DATA present on the device!")
-                    .arg(ui->selectDevice_combo->currentData().toString()));
-    if(confirm.exec() == QMessageBox::StandardButton::Ok)
+    if(confirm2.exec() == 0)
     {
       qInfo() << "Install.";
     }

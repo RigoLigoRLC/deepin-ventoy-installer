@@ -17,7 +17,8 @@ int main(int argc, char *argv[])
   //a.setApplicationAcknowledgementPage("https://你的网站");
   //a.setProductIcon(QIcon(":/images/icon.svg"));  //设置Logo
   //a.setProductName("DtkDemo");
-  a.setApplicationName("Deepin Ventoy Installer"); //只有在这儿修改窗口标题才有效
+  a.setApplicationDescription(QObject::tr("A Ventoy installer front-end written with DTK."));
+  a.setApplicationName(QObject::tr("Deepin Ventoy Installer")); //只有在这儿修改窗口标题才有效
 
   MainWindow w;
   w.show();

@@ -1,9 +1,11 @@
 #include <QProcess>
 #include <QDebug>
 #include <QApplication>
-#include <QInputDialog>
-#include <DInputDialog>
+#include <DDialog>
+#include <DLineEdit>
 #include "utilities.h"
+
+DWIDGET_USE_NAMESPACE
 
 QString findDVIWorkFile(const QDir &dviTmpDir)
 {
@@ -39,13 +41,11 @@ QString findDVIWorkFile(const QDir &dviTmpDir)
     runTest.setWorkingDirectory(ventoyDir.absolutePath());
     runTest.start("Ventoy2Disk.sh"); // Decompress tools first then we run test
     runTest.waitForFinished();
-    qInfo() << runTest.readAll().toStdString().data();
     runTest.start("sh");
     runTest.waitForStarted();
     runTest.write(". tool/ventoy_lib.sh \n");
     runTest.write("check_tool_work_ok \n");
     runTest.write("exit\n");
-    qInfo() << runTest.readAll().toStdString().data();
     runTest.waitForFinished(100);
     if(!runTest.exitCode())
     {
@@ -87,21 +87,30 @@ void rerunOnNonRoot()
   if(qgetenv("USER") != "root")
   {
 
-    Dtk::Widget::DInputDialog input;
-    input.resize(300, 300);
-    input.setWindowTitle(QObject::tr("Run As Root"));
-    input.setLabelText(QObject::tr("This application must be run as root user.\n"
-                                   "Provide password to continue."));
-    input.setTextEchoMode(QLineEdit::Password);
-    input.exec();
-    QString password = input.textValue();
-    QProcess rerun;
-    rerun.startDetached("bash", QStringList() << "-c"
-                << QString("echo %1 | sudo -S %2 %3")
-                .arg(password)
-                .arg(QCoreApplication::applicationFilePath())
-                .arg(QCoreApplication::applicationPid()));
-    //rerun.waitForFinished(1000);
+    Dtk::Widget::DDialog input;
+    Dtk::Widget::DLineEdit *edit = new Dtk::Widget::DLineEdit(&input);
+    edit->setEchoMode(QLineEdit::Password);
+    input.setTitle(QObject::tr("Run As Root"));
+    input.setMessage(QObject::tr("This application must be run as root user.\n"
+                                   "Provide password to continue.\n")); // An empty line to separate contents
+    input.addContent(edit);
+    input.addButton(QObject::tr("Authenticate"), true, DDialog::ButtonType::ButtonRecommend);
+    input.setIcon(QIcon::fromTheme("dialog-information"));
+    input.setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+    edit->setFocus(Qt::FocusReason::TabFocusReason); // FIXME: The input will not get focused despite my efforts.
+    QObject::connect(edit, SIGNAL(returnPressed()), &input, SLOT(accept()));
+    //QObject::connect(&input, SIGNAL())
+
+    // The only way to explicitly close the window will return -1, not rejected (0) nor accepted (1)
+    if(input.exec() != -1)
+    {
+      QString password = edit->text();
+      QProcess rerun;
+      rerun.startDetached("bash", QStringList() << "-c"
+                  << QString("echo %1 | sudo -S %2")
+                  .arg(password)
+                  .arg(QCoreApplication::applicationFilePath()));
+    }
     exit(1);
   }
 }
