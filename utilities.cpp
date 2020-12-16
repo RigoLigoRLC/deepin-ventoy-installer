@@ -97,7 +97,7 @@ void rerunOnNonRoot()
     input.addButton(QObject::tr("Authenticate"), true, DDialog::ButtonType::ButtonRecommend);
     input.setIcon(QIcon::fromTheme("dialog-information"));
     input.setFocusPolicy(Qt::FocusPolicy::StrongFocus);
-    edit->setFocus(Qt::FocusReason::TabFocusReason); // FIXME: The input will not get focused despite my efforts.
+    edit->lineEdit()->setFocus(Qt::FocusReason::TabFocusReason); // FIXME: The input will not get focused despite my efforts.
     QObject::connect(edit, SIGNAL(returnPressed()), &input, SLOT(accept()));
     //QObject::connect(&input, SIGNAL())
 
