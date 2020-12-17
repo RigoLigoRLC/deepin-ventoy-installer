@@ -45,8 +45,9 @@ class Widget : public QWidget
 
   private slots:
     void finishedUnarchive();
-
     void proceedInstallation();
+    void finishedInstallation();
+    void readInstallLog();
 
   private slots:
     void on_chkUseCustomVolLabel_stateChanged(int arg1);
@@ -70,11 +71,23 @@ class Widget : public QWidget
      */
     void getArchiveVentoyVersion();
 
+    /**
+     * @brief install Ventoy to the specified device
+     * @param the target device to install into
+     * @param is going to update rather than install
+     * @param is going to install forcifully
+     * @param is going to use GPT partition table
+     * @param is going to use secure boot
+     * @param the volume label for the ISO partition
+     */
+    void installVentoy(const QString &aDevice, bool aIsUpdate, bool aIsForced,
+                       bool aUseGpt, bool aUseSecureBoot, const QString &aVolLabel);
+
 
   private:
     Ui::Widget *ui;
     QDir tmpDir, ventoyDir;
-    QProcess *unarchiveProcess;
+    QProcess m_unarchiveProcess, m_installProcess;
     SemanticVersion m_archiveVer, m_DeviceVer;
 };
 
