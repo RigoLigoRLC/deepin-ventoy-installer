@@ -7,7 +7,7 @@
 
 DWIDGET_USE_NAMESPACE
 
-QString findDVIWorkFile(const QDir &dviTmpDir)
+QString findDVIWorkFile(const QDir &dviTmpDir, bool aNoTest)
 {
   auto tmpDirContent = dviTmpDir.entryList();
   if(tmpDirContent.size() == 0)
@@ -47,7 +47,7 @@ QString findDVIWorkFile(const QDir &dviTmpDir)
     runTest.write("check_tool_work_ok \n");
     runTest.write("exit\n");
     runTest.waitForFinished(100);
-    if(!runTest.exitCode())
+    if(!runTest.exitCode() || aNoTest)
     {
       return ventoyDir.absolutePath();
     }

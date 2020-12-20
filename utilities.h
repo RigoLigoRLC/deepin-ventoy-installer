@@ -13,9 +13,15 @@ struct SemanticVersion
   bool operator==(const SemanticVersion& a) { return (major == a.major) && (minor == a.minor) && (patch == a.patch); }
   bool operator<(const SemanticVersion& a)
   {
-    if(major >= a.major) return false;
-    else if(minor >= a.minor) return false;
-    else if(patch >= a.patch) return false;
+    if(major > a.major) return false;
+    if(major == a.major)
+    {
+      if(minor > a.minor) return false;
+      if(minor == a.minor)
+      {
+        if(patch >= a.patch) return false;
+      }
+    }
     return true;
   }
   bool operator>(const SemanticVersion& a) { return !(*this < a); }
@@ -26,7 +32,7 @@ struct SemanticVersion
 
 };
 
-QString findDVIWorkFile(const QDir &dviTmpDir);
+QString findDVIWorkFile(const QDir &dviTmpDir, bool aNoTest);
 void rerunOnNonRoot();
 void enableCheckBox(bool criteria, QCheckBox* w);
 

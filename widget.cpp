@@ -31,7 +31,7 @@ bool Widget::hasOngoingOperation()
       m_installProcess.state() == QProcess::ProcessState::Running;
 }
 
-void Widget::processVentoyArchive(QString aPath)
+void Widget::processVentoyArchive(QString aPath, bool aNoTest)
 {
   m_unarchiveProcess.kill();
   m_unarchiveProcess.waitForFinished();
@@ -40,6 +40,7 @@ void Widget::processVentoyArchive(QString aPath)
     qWarning() << "Failed to remove the temporary directory for extraction";
   }
   tmpDir.mkpath(tmpDir.path());
+  m_noTestVentoy = aNoTest;
   m_unarchiveProcess.start(QString("tar -xavf %1 -C %2").arg(QUrl(aPath).path()).arg(tmpDir.path()));
 }
 
@@ -66,7 +67,7 @@ void Widget::finishedUnarchive()
   // Successfully unarchived, let's roll!
   QDir::setCurrent(tmpDir.path());
 
-  QString dviWorkDir = findDVIWorkFile(tmpDir);
+  QString dviWorkDir = findDVIWorkFile(tmpDir, m_noTestVentoy);
   if(dviWorkDir == "")
   {
     QMessageBox failFindScriptMsg;
@@ -181,7 +182,7 @@ void Widget::readInstallLog()
 
 void Widget::goBackDropArchive()
 {
-  const QString &dviWorkDir = findDVIWorkFile(tmpDir);
+  const QString &dviWorkDir = findDVIWorkFile(tmpDir, true);
   if(dviWorkDir == "")
   {
     ui->btnUsePreviousExtraction->setVisible(false);
@@ -320,10 +321,21 @@ void Widget::getDeviceVentoyVersion()
 {
   QProcess getDeviceVer;
   bool forceExit = false;
+  QString vtoyfatPath;
+  if(m_archiveVer >= SemanticVersion(1, 0, 30))
+  {
+    vtoyfatPath = "tool/x86_64/vtoyfat";
+  }
+  else
+  {
+    vtoyfatPath = "tool/vtoyfat_32";
+  }
+
   getDeviceVer.start("sh");
   getDeviceVer.waitForStarted();
   getDeviceVer.write(". tool/ventoy_lib.sh\n");
-  getDeviceVer.write(QString("tool/vtoyfat_32 `get_disk_part_name %1 2`\n")
+  getDeviceVer.write(QString("%1 `get_disk_part_name %2 2`\n")
+                     .arg(vtoyfatPath)
                      .arg(ui->selectDevice_combo->currentData().toString()).toStdString().data());
   getDeviceVer.write("exit\n");
   if(!getDeviceVer.waitForFinished(100))
@@ -385,7 +397,7 @@ void Widget::initWidget()
           }
          );
 
-  connect(ui->lblPictureDropArchive, SIGNAL(droppedArchive(QString)), this, SLOT(processVentoyArchive(QString)));
+  connect(ui->lblPictureDropArchive, SIGNAL(droppedArchive(QString, bool)), this, SLOT(processVentoyArchive(QString, bool)));
   connect(&m_unarchiveProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
         [&](int exitCode, QProcess::ExitStatus exitStatus)
         {

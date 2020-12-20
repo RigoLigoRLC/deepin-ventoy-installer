@@ -33,8 +33,9 @@ class Widget : public QWidget
     /**
      * @brief clean tmp folder and unarchive the specified archive.
      * @param aPath the target archive path.
+     * @param aNoTest if true, do not test if archive works.
      */
-    void processVentoyArchive(QString aPath);
+    void processVentoyArchive(QString aPath, bool aNoTest);
 
     /**
      * @brief get the Ventoy version in selected device. Must select a device.
@@ -104,6 +105,7 @@ class Widget : public QWidget
     QProcess m_unarchiveProcess, m_installProcess;
     SemanticVersion m_archiveVer, m_DeviceVer;
     QAction *actGoDropArchive;
+    bool m_noTestVentoy;
 };
 
 #endif // WIDGET_H

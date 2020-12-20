@@ -18,7 +18,7 @@ class DVIDropArea : public QLabel
     void dropEvent(QDropEvent* event) override;
 
   signals:
-    void droppedArchive(QString path);
+    void droppedArchive(QString path, bool noTest);
 };
 
 #endif // DVIDROPAREA_H

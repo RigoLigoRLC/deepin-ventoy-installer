@@ -51,6 +51,8 @@ void MainWindow::initWindow()
   actGoDropArchive = new QAction(this);
   actGoDropArchive->setText(tr("Go back to drop archive"));
   connect(actGoDropArchive, &QAction::triggered, w, &Widget::goBackDropArchive);
-  //this->titlebar()->menu()->addAction(actGoDropArchive);  // will SIGSEGV
+  QMenu *menu = new QMenu(this->titlebar());
+  menu->addAction(actGoDropArchive);
+  this->titlebar()->setMenu(menu);
   this->titlebar()->setIcon(QIcon(":/images/res/icon.png"));
 }

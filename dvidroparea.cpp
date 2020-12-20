@@ -40,12 +40,17 @@ void DVIDropArea::dropEvent(QDropEvent *event)
   auto mimeData = event->mimeData();
   const QString &mimeStr = mimeData->text();
   QFileInfo fileInfo;
+  bool noTest = false;
+  if(event->keyboardModifiers().testFlag(Qt::KeyboardModifier::ShiftModifier))
+  {
+    noTest = true;
+  }
   if(mimeStr.indexOf('\n') == -1) // Only one file
   {
     fileInfo.setFile(QUrl(mimeStr).path());
     if(fileInfo.isFile())
     {
-      emit droppedArchive(mimeData->text());
+      emit droppedArchive(mimeData->text(), noTest);
       event->acceptProposedAction();
     }
   }
