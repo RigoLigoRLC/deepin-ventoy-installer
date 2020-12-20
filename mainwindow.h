@@ -9,14 +9,19 @@ DWIDGET_USE_NAMESPACE
 
 class MainWindow : public DMainWindow
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+  MainWindow(QWidget *parent = nullptr);
 
 private:
-    Widget *w;
+  Widget *w;
+  void closeEvent(QCloseEvent *e) Q_DECL_OVERRIDE;
+  void initWindow();
+
+private:
+  QAction *actGoDropArchive;
+
 };
 
 #endif // MAINWINDOW_H

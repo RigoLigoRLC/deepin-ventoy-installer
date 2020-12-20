@@ -107,7 +107,7 @@ void rerunOnNonRoot()
       QString password = edit->text();
       QProcess rerun;
       rerun.startDetached("bash", QStringList() << "-c"
-                  << QString("echo %1 | sudo -S %2")
+                  << QString("echo %1\"\n\n\n\n\n\n\n\n\" | sudo -S %2") // If fails then ENTER ENTER ENTER til sudo ends
                   .arg(password)
                   .arg(QCoreApplication::applicationFilePath()));
     }

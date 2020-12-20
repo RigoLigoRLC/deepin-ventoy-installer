@@ -3,6 +3,7 @@
 #include <QProcess>
 #include <QStorageInfo>
 #include <QMessageBox>
+#include <QScrollBar>
 
 #include "widget.h"
 #include "ui_widget.h"
@@ -22,6 +23,12 @@ Widget::Widget(QWidget *parent) :
 Widget::~Widget()
 {
   delete ui;
+}
+
+bool Widget::hasOngoingOperation()
+{
+  return m_unarchiveProcess.state() == QProcess::ProcessState::Running ||
+      m_installProcess.state() == QProcess::ProcessState::Running;
 }
 
 void Widget::processVentoyArchive(QString aPath)
@@ -80,7 +87,7 @@ void Widget::proceedInstallation()
   const QString &devicePath = ui->selectDevice_combo->currentData().toString();
   bool isForceInstall, isUpdateInstall;
 
-  isForceInstall = m_DeviceVer >= m_archiveVer;
+  isForceInstall = m_DeviceVer >= m_archiveVer && !m_DeviceVer.invalid();
   isUpdateInstall = m_DeviceVer < m_archiveVer;
 
   if(isForceInstall)
@@ -150,6 +157,7 @@ void Widget::finishedInstallation()
 {
   ui->spinnerInstall->stop();
   ui->spinnerInstall->setVisible(false);
+  ui->btnBack->setVisible(true);
   if(m_installProcess.exitCode())
   {
     ui->lblSuccessFailImage->setPixmap(QIcon::fromTheme("dialog-error").pixmap({48, 48}));
@@ -165,7 +173,24 @@ void Widget::finishedInstallation()
 
 void Widget::readInstallLog()
 {
-  ui->textInstallLogs->appendPlainText(m_installProcess.readAll());
+  ui->textInstallLogs->textCursor().movePosition(QTextCursor::MoveOperation::End);
+  ui->textInstallLogs->textCursor().insertText(m_installProcess.readAll());
+  auto scroll = ui->textInstallLogs->verticalScrollBar();
+  scroll->setValue(scroll->maximum());
+}
+
+void Widget::goBackDropArchive()
+{
+  const QString &dviWorkDir = findDVIWorkFile(tmpDir);
+  if(dviWorkDir == "")
+  {
+    ui->btnUsePreviousExtraction->setVisible(false);
+  }
+  else
+  {
+    QDir::setCurrent(dviWorkDir);
+  }
+  ui->mainPager->setCurrentIndex(0);
 }
 
 void Widget::changeTheme(bool aDark)
@@ -278,7 +303,17 @@ void Widget::installVentoy(const QString &aDevice, bool aIsUpdate, bool aIsForce
   m_installProcess.start("Ventoy2Disk.sh", params);
   m_installProcess.write("y\ny\ny\ny\ny\ny\ny\ny\n"); // Gonna perform YES YES YES YES YES...
   ui->mainPager->setCurrentIndex(2);
+  ui->btnBack->setVisible(false);
+  ui->textInstallLogs->clear();
   ui->spinnerInstall->start();
+}
+
+void Widget::forceStopAll()
+{
+  m_installProcess.kill();
+  m_unarchiveProcess.kill();
+  m_installProcess.waitForFinished();
+  m_unarchiveProcess.waitForFinished();
 }
 
 void Widget::getDeviceVentoyVersion()
@@ -309,6 +344,26 @@ void Widget::getDeviceVentoyVersion()
   {
     ui->lblDeviceVentoyVerVal->setText("N/A");
     m_DeviceVer = SemanticVersion(0, 0, 0);
+  }
+
+  if(!m_DeviceVer.invalid())
+  {
+    if(m_DeviceVer > m_archiveVer)
+    {
+      ui->lblTips->setText(tr("Will force install to the drive!"));
+    }
+    else if (m_DeviceVer < m_archiveVer)
+    {
+      ui->lblTips->setText(tr("Will upgrade Ventoy. Volume label will remain untouched."));
+    }
+    else
+    {
+      ui->lblTips->clear();
+    }
+  }
+  else
+  {
+    ui->lblTips->clear();
   }
 }
 
@@ -349,19 +404,13 @@ void Widget::initWidget()
   connect(ui->btnRefreshDeviceList, SIGNAL(clicked()), this, SLOT(queryDeviceList()));
   connect(ui->btnUsePreviousExtraction, SIGNAL(clicked()), this, SLOT(switchToInstaller()));
   connect(ui->btnInstall, SIGNAL(clicked()), this, SLOT(proceedInstallation()));
+  connect(ui->btnBack, &QPushButton::clicked, [&](){ ui->mainPager->setCurrentIndex(1); });
 
-  const QString &dviWorkDir = findDVIWorkFile(tmpDir);
-  if(dviWorkDir == "")
-  {
-    ui->btnUsePreviousExtraction->setVisible(false);
-  }
-  else
-  {
-    QDir::setCurrent(dviWorkDir);
-  }
   connect(&m_installProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(readInstallLog()));
 
   ui->lblSuccessFailImage->setVisible(false);
+  ui->textInstallLogs->setReadOnly(true);
+  goBackDropArchive();
 }
 
 void Widget::on_chkUseCustomVolLabel_stateChanged(int checkState)

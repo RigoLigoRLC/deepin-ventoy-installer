@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>426</width>
     <height>511</height>
    </rect>
   </property>
@@ -29,7 +29,7 @@
    <item>
     <widget class="QStackedWidget" name="mainPager">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="pageDropArchive">
       <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -250,6 +250,13 @@ in Device</string>
         </spacer>
        </item>
        <item>
+        <widget class="QLabel" name="lblTips">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="grpAdditionalConfig">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
@@ -377,7 +384,18 @@ in Device</string>
         </layout>
        </item>
        <item>
-        <widget class="QPlainTextEdit" name="textInstallLogs"/>
+        <widget class="QPlainTextEdit" name="textInstallLogs">
+         <property name="undoRedoEnabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnBack">
+         <property name="text">
+          <string>Go back</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

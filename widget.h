@@ -12,6 +12,8 @@ namespace Ui {
 class Widget;
 }
 
+class MainWindow;
+
 class Widget : public QWidget
 {
     Q_OBJECT
@@ -20,7 +22,18 @@ class Widget : public QWidget
     explicit Widget(QWidget *parent = nullptr);
     ~Widget();
 
+    bool hasOngoingOperation();
+
+    /**
+     * @brief forcifully stop all ongoing processes
+     */
+    void forceStopAll();
+
   public slots:
+    /**
+     * @brief clean tmp folder and unarchive the specified archive.
+     * @param aPath the target archive path.
+     */
     void processVentoyArchive(QString aPath);
 
     /**
@@ -43,6 +56,7 @@ class Widget : public QWidget
      */
     void verifyVentoyFeatures();
 
+    void goBackDropArchive();
   private slots:
     void finishedUnarchive();
     void proceedInstallation();
@@ -73,12 +87,12 @@ class Widget : public QWidget
 
     /**
      * @brief install Ventoy to the specified device
-     * @param the target device to install into
-     * @param is going to update rather than install
-     * @param is going to install forcifully
-     * @param is going to use GPT partition table
-     * @param is going to use secure boot
-     * @param the volume label for the ISO partition
+     * @param aDevice the target device to install into
+     * @param aIsUpdate is going to update rather than install
+     * @param aIsForced is going to install forcifully
+     * @param aUseGpt is going to use GPT partition table
+     * @param aUseSecureBoot is going to use secure boot
+     * @param aVolLabel the volume label for the ISO partition
      */
     void installVentoy(const QString &aDevice, bool aIsUpdate, bool aIsForced,
                        bool aUseGpt, bool aUseSecureBoot, const QString &aVolLabel);
@@ -89,6 +103,7 @@ class Widget : public QWidget
     QDir tmpDir, ventoyDir;
     QProcess m_unarchiveProcess, m_installProcess;
     SemanticVersion m_archiveVer, m_DeviceVer;
+    QAction *actGoDropArchive;
 };
 
 #endif // WIDGET_H

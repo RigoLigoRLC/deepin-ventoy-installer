@@ -4,5 +4,6 @@
         <file>res/drop-dark.svg</file>
         <file>res/refresh-dark.svg</file>
         <file>res/refresh.svg</file>
+        <file>res/icon.png</file>
     </qresource>
 </RCC>

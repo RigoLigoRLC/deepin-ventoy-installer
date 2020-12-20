@@ -44,3 +44,5 @@ FORMS += \
 
 RESOURCES += \
     res.qrc
+
+TRANSLATIONS += dvtoyinst_zh.ts
